@@ -42,11 +42,18 @@ export default class Logic {
       throw '"encode" only accepts integers smaller than Number.MAX_SAFE_INTEGER.'
     }
 
-    if (typeof int !== 'number' || int !== parseInt(int as any)) {
-      throw '"encode" only accepts integers.'
+    if (typeof int !== 'number') {
+      throw '"encode" only accepts numbers.'
     }
 
-    return this.#encode(int)
+    if (int === Number.parseInt(int as any)) return this.#encode(int)
+
+    const [integer, decimal] = int.toString().split('.')
+    return (
+      this.#encode(Number.parseInt(integer)) +
+      '.' +
+      this.#encode(Number.parseInt(decimal))
+    )
   }
 
   #decode(str: string) {
@@ -71,6 +78,13 @@ export default class Logic {
 
     if (typeof str !== 'string') {
       throw '"decode" only accepts strings.'
+    }
+
+    const [integer, decimal] = str.split('.')
+    if (decimal) {
+      return Number.parseFloat(
+        this.#decode(integer) + '.' + this.#decode(decimal)
+      )
     }
 
     return this.#decode(str)
